@@ -36,7 +36,7 @@
 
           <div class="vue-template" v-if="currentMenu === 'practice'">
              <div>
-                <div class='chatBox' style="height: 400px;overflow:auto;" id='chatBox'>
+                <div class='chatBox' style="height: 400px;overflow:auto;margin-top:50px" id='chatBox'>
                   <div v-for="(data, i) in practiceGameData" :key="i" >
                     <p :class="[data.who === 'computer' ? 'p-left': 'p-right']" class="margin-top:20px">{{practiceGameData[i].who}}: {{practiceGameData[i].word}}</p>
                   </div>
@@ -46,13 +46,13 @@
                   <!-- <input type="text"  v-model="unchekedWord" @keyup.enter="pCheck()"> -->
                   <input type="text"  v-model="unchekedWord" :placeholder="allOptions" @keyup.enter="checkWord()">
                   <button @click="checkWord()">Send</button>
-                  <button>Give Up</button>
+                  <!-- <button>Give Up</button> -->
                   <!-- <button @click="checkcheck()">check</button> -->
                 </div>
                
                <br><br>
              </div>
-            <button class="btn btn-outline-primary" @click="currentMenu = 'home'" >Go back home</button>
+            <!-- <button class="btn btn-outline-primary" @click="currentMenu = 'home'" >Go back home</button> -->
           </div>
           
 
