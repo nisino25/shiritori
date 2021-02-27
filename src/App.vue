@@ -37,17 +37,23 @@
           <div class="vue-template" v-if="currentMenu === 'practice'">
              <div>
                 <div class='chatBox' style="height: 400px;overflow:auto;margin-top:50px" id='chatBox'>
-                  <div v-for="(data, i) in practiceGameData" :key="i" >
-                    <p :class="[data.who === 'computer' ? 'p-left': 'p-right']" class="margin-top:20px">{{practiceGameData[i].who}}: {{practiceGameData[i].word}}</p>
+                  <div v-for="data in gameHistory" :key="gameHistoryKey(data)" >
+                    <p :class="[data.player === 'computer' ? 'p-left': 'p-right']" class="margin-top:20px">{{data.player}}: {{data.word}}</p>
                   </div>
                 </div>
+  
+                <div v-if="currentPlayer === 'me'">
+                  <div>
+                    <!-- <input type="text"  v-model="unchekedWord" @keyup.enter="pCheck()"> -->
+                    <input type="text"  v-model="unchekedWord" :placeholder="placeholderText">
+                    <button @click="processGame()" :disabled="!isCandidateWordValid">Send</button>
+                    <!-- <button>Give Up</button> -->
+                    <!-- <button @click="checkcheck()">check</button> -->
+                  </div>
 
-                <div>
-                  <!-- <input type="text"  v-model="unchekedWord" @keyup.enter="pCheck()"> -->
-                  <input type="text"  v-model="unchekedWord" :placeholder="allOptions" @keyup.enter="checkWord()">
-                  <button @click="checkWord()">Send</button>
-                  <!-- <button>Give Up</button> -->
-                  <!-- <button @click="checkcheck()">check</button> -->
+                  <ul v-if="!!candidateWordErrors.length" class="errors">
+                    <li v-for="err in candidateWordErrors" :key="err" >{{ err }}</li>
+                  </ul>
                 </div>
                
                <br><br>
@@ -166,7 +172,8 @@ import db from './db';
 // import firebase from 'firebase/app';
 import 'firebase/firestore';
 import { onMounted } from 'vue';
-import { wordsList } from './const/wordsList'
+import { tmpWordList } from './const/wordsList'
+import { acceptableLetters, fallbackLetters } from './const/acceptableLetters'
 
 
 // import firebase from 'firebase'
@@ -202,7 +209,7 @@ export default {
   name: 'App',
   data(){
     return {
-      currentMenu: 'chat',
+      currentMenu: 'practice',
 
       user: {
         name: '',
@@ -232,11 +239,67 @@ export default {
 
       flag:true,
 
-
-      wordsList,
+      players: ['computer', 'me'],
+      currentPlayer: 'me',
+      wordsList: tmpWordList,
+      cpuDict: {},
+      nextHeadCandidates: [],
+      gameHistory: [], // Array<{ player: string; word: string; timestamp: Date }>
     }
   },
+  computed: {
+    placeholderText() {
+      return `「${this.nextHeadCandidates.join(',')}」から始まる言葉`
+    },
+    wordHitory() {
+      return this.gameHistory.map(h => h.word)
+    },
+    candidateWordErrors() {
+      const word = this.unchekedWord
+      let errors = []
 
+      // 長さをチェック
+      if (word.length < 1) {
+        errors.push('文字を入力してください')
+      }
+
+      // ひらがなかどうかチェック
+      if (!this.hiraganaCheck(word)) {
+        errors.push('ひらがなで入力してください')
+      }
+
+      // 使用済みかチェック
+      if (this.wordHitory.includes(word)) {
+        errors.push('すでに利用されたワードです')
+      }
+
+      // 「を」「ん」「っ」で終われない
+      if (word.endsWith('を') || word.endsWith('ん') || word.endsWith('っ')) {
+        errors.push('「を」「ん」「っ」で終わることはできません')
+      }
+
+      // 最後の答えの末尾と、先頭が一致しているか
+      if (!this.nextHeadCandidates.includes(word[0])) {
+        errors.push(`「${this.nextHeadCandidates.join(',')}」から始まる言葉を入力してくだい`)
+      }
+
+      return errors
+    },
+    isCandidateWordValid() {
+      return !this.candidateWordErrors.length
+    }
+  },
+  watch: {
+    currentPlayer: {
+      handler(val) {
+        if (val === 'computer') {
+          // CPUにプレイさせる
+          this.playAsComputer()
+        }
+      },
+      immediate: true
+    }
+  },
   methods: {
     assignAllWordsToList(){
 
@@ -301,17 +364,44 @@ export default {
         })
       })
     },
-    checkcheck(){
-      console.log(this.practiceGameData)
-    },
-    pCheck(){
-      alert('enter') 
-    },
     hiraganaCheck(word){
-      if(word ==='／'||word ==='ー'||word ==='っ'||word ==='ゃ'|| word ==='ゅ'||word ==='ょ'||word ==='ぁ'||word ==='ぃ'|| word ==='ぅ'||word === 'ぇ'|| word === 'ぉ'|| word === 'あ'|| word ==='い'|| word ==='う'|| word === 'え'|| word === 'お'|| word === 'か'||word === 'き' || word === 'く' ||word === 'け'|| word === 'こ' ||word === 'が' ||word === 'ぎ' || word === 'ぐ' ||word === 'げ' || word === 'ご'||word === 'さ'|| word === 'し'||word === 'す' || word === 'せ' ||word === 'そ' ||word === 'ざ' ||word === 'じ' || word === 'ず' ||word === 'ぜ' || word === 'ぞ'|| word === 'た'||word === 'ち'|| word === 'つ'||word === 'て' || word === 'と' ||word === 'だ' || word === 'ぢ' ||word === 'づ' || word === 'で' ||word === 'ど' || word === 'な' ||word === 'に' || word === 'ぬ' ||word === 'ね'|| word === 'の' ||word === 'は' ||word === 'ひ' ||word === 'ふ' ||word === 'へ' ||word === 'ば' || word === 'び' ||word === 'ぶ' || word === 'べ' ||word === 'ぼ'||word === 'ぱ' || word === 'ぴ' ||word === 'ぷ' ||word === 'ぺ' ||word === 'ぽ' ||word === 'ま' || word === 'ま' ||word === 'み' ||word === 'む' ||word === 'め' ||word === 'も' ||word === 'や'||word === 'ゆ'|| word === 'よ'||word === 'ら' ||word === 'り'|| word === 'る' ||word === 'れ'|| word === 'ろ' ||word === 'わ' ||word === 'を'||word === 'ん'){ 
-        return true;
-      }else{
-        return false
+      return /^([ぁ-ん]|／|ー)*$/.test(word)
+    },
+    gameHistoryKey(gameHistoryItem) {
+      const { player, word, timestamp } = gameHistoryItem
+      return `${player}-${word}-${timestamp}`
+    },
+    playAsComputer() {
+      const word = this.pickWordFromCPUdict(this.nextHeadCandidates)
+      if (!word) alert('ゲームが終了しました!')
+
+      this.gameHistory.push({ player: 'computer', word, timestamp: new Date() })
+      const headCandidates = this.getHeadCandidate(word)
+      this.nextHeadCandidates = headCandidates
+      this.currentPlayer = 'me'
+    },
+    pickWordFromCPUdict(headCandidates) {
+      for (const headCandidate of headCandidates) {
+        const sourceList = this.cpuDict[headCandidate]
+        if (!sourceList.length) continue;
+
+        const randomIndex = Math.floor(Math.random() * sourceList.length)
+        const word = sourceList[randomIndex]
+        if (!word) continue;
+
+        this.omitFromCPUDict(headCandidate, randomIndex)
+
+        return word
+      }
+
+      return null
+    },
+    omitFromCPUDict(key, index) {
+      const oldSource = this.cpuDict[key]
+
+      this.cpuDict = {
+        ...this.cpuDict,
+        [key]: [...oldSource.slice(0, index), ...oldSource.slice(index + 1)]
       }
     },
     moreOptions(word){
@@ -510,24 +600,56 @@ export default {
     //       }
     //     });
     // },
+    processGame() {
+      // 1. uncheckedWordが不正だったらreturn
+      // 2. uncheckedWordがcpuDictに存在したらcpuDictから取り除く
+      // 3. gameHistoryに新規にpush
+      // 4. nextHeadCandidatesを更新
+      // 5. ターンを相手に変更
 
+      if (!this.isCandidateWordValid) return
+
+      const word = this.unchekedWord
+
+      // check from cpuDict
+      const indexInCPUDict = this.cpuDict[word[0]].findIndex(w => w === word)
+      const isInCPUDict = indexInCPUDict !== -1
+      if (isInCPUDict) {
+        this.omitFromCPUDict(word[0], indexInCPUDict)
+      }
+
+      this.gameHistory.push({ player: this.currentPlayer, word, timestamp: new Date() })
+
+      const headCandidates = this.getHeadCandidate(word)
+      this.nextHeadCandidates = headCandidates
+
+      this.currentPlayer = this.currentPlayer === 'computer' ? 'me' : 'computer'
+      this.unchekedWord = ''
+    },
+    getHeadCandidate(word) {
+      if (word.endsWith('ー')) {
+        const lastLetter = word.slice(word.length - 2, word.length - 1)
+        let candidates1 = acceptableLetters[lastLetter] || []
+
+        // optional letter
+        const candidates2 = fallbackLetters[lastLetter] || []
+
+        return [...candidates1, ...candidates2]
+      } else {
+        const lastLetter = word.slice(word.length - 1)
+        const candidates = acceptableLetters[lastLetter] || []
+        return candidates
+      }
+    },
     checkWord(){
-      this.flag = true;
-      let wordCount = 0
-      while(wordCount < this.unchekedWord.length){
-        // console.log(this.unchekedWord.charAt(wordCount))
-        if(this.hiraganaCheck(this.unchekedWord.charAt(wordCount))){
-          wordCount++
-        }else{
-          alert('「ひらがな」だけしか受け付けていません')
-          this.flag =false
-          break;
-        }
-      }
+      if (!this.isCandidateWordValid) return
 
-      if(!this.flag){
-        return;
-      }
+      // this.flag = true;
+      // let wordCount = 0
+
+      // if(!this.flag){
+      //   return;
+      // }
       // check if every words were hiragana or not
 
       // str.charAt(0);
@@ -1047,6 +1169,24 @@ export default {
 
   },
   mounted(){
+    this.cpuDict = tmpWordList // FIDME: use wordList
+    const firstWord = 'すきー'
+
+    this.gameHistory.push({ player: 'computer', word: firstWord, timestamp: new Date() })
+    const headCandidates = this.getHeadCandidate(firstWord)
+    this.nextHeadCandidates = headCandidates
+    this.currentPlayer = 'me'
+
+
+
+
+
+
+
+
+
+
+    // Legacy
 
     this.practiceGameData.push({who: 'computer',word: 'しりとり' });
     this.pracrticeWordData.push('しりとり')
@@ -1085,5 +1225,10 @@ export default {
 .p-right{
   text-align: right;
   margin-left: 10px;
+}
+
+.errors {
+  padding-left: 0;
+  color: red;
 }
 </style>
