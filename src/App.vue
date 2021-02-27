@@ -54,6 +54,33 @@
              </div>
             <!-- <button class="btn btn-outline-primary" @click="currentMenu = 'home'" >Go back home</button> -->
           </div>
+
+          <div class="vue-template" v-if="currentMenu === 'chat'">
+             <div>
+                <div class='chatBox' style="height: 400px;overflow:auto;margin-top:50px" id='chatBox'>
+                  <div v-for="(data, i) in chatData" :key="i" >
+                    <p :class="[data.who === 'computer' ? 'p-left': 'p-right']" class="margin-top:20px">{{chatData}}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <!-- <input type="text"  v-model="unchekedWord" @keyup.enter="pCheck()"> -->
+                  <form action=""   v-on:submit.prevent="sendMessage()">
+                    <input type="text"  v-model="currentMessage" :placeholder="allOptions">
+                    <!-- <button @click="sendMessage()">Sende</button> -->
+                  </form>
+
+                  <button @click="checkDB()">hey</button>
+                  
+                  
+                  <!-- <button>Give Up</button> -->
+                  <!-- <button @click="checkcheck()">check</button> -->
+                </div>
+               
+               <br><br>
+             </div>
+            <!-- <button class="btn btn-outline-primary" @click="currentMenu = 'home'" >Go back home</button> -->
+          </div>
           
 
           <div v-if="currentMenu === 'signup'" class="vue-tempalte">
@@ -133,18 +160,58 @@
 
 <script> 
 import firebase from 'firebase'
+// import { auth, AuthStore, db } from './main2.js'
+// import { db } from '@/main.js'
+import db from './db';
+// import firebase from 'firebase/app';
+import 'firebase/firestore';
+import { onMounted } from 'vue';
+
+
+// import firebase from 'firebase'
+
 
 export default {
+  setup(){
+    onMounted(() => {
+      // const messagesRef = db.database().ref("messages");
+      // let docRef = db.collection('database').doc('practice')
+      // let docRef = db.collection('database').doc('mainData')
+      // let val = await docRef.get()
+      // console.log(val)
+      // const messagesRef = db.collection('database').doc('practice')
+      
+      // messagesRef.on('value', snapshot => {
+      //   const data = snapshot.val();
+      //   console.log(data)
+      //   // let messages = [];
+      //   // Object.keys(data).forEach(key => {
+      //   //   messages.push({
+      //   //     id: key,
+      //   //     username: data[key].username,
+      //   //     content: data[key].content
+      //   //   });
+      //   // });
+      //   // state.messages = messages;
+      // });
+
+
+    });
+  },
   name: 'App',
   data(){
     return{
-      currentMenu: 'practice',
+      currentMenu: 'chat',
 
       user: {
         name: '',
         email: '',
         password: ''
       },
+
+      chatData: [],
+      currentMessage: undefined,
+
 
 
       unchekedWord: '',
@@ -4775,9 +4842,27 @@ export default {
       }
     },
 
-
-
-
+    // checkDB(){
+    //   console.log(db)
+    //    console.log(db)
+    //   // firebase.firestore()
+    //   const docRef = db.collection('database').doc('practice')
+    //   docRef.on("value", snapshot => {
+    //       // eslint-disable-line
+    //       if (snapshot) {
+    //         const rootList = snapshot.val();
+    //         console.log(snapshot.val)
+    //         let list = [];
+    //         Object.keys(rootList).forEach((val) => {
+    //           rootList[val].id = val;
+    //           list.push(rootList[val]);
+    //         });
+    //         this.chatData = list;
+    //       }else{
+    //         console.log('nope')
+    //       }
+    //     });
+    // },
 
     checkWord(){
       this.flag = true;
@@ -4868,7 +4953,6 @@ export default {
 
       
     },
-
 
     returnNewWord(){
       // console.log(this.wordsList)
@@ -5239,29 +5323,98 @@ export default {
         
 
       }
-    }
+    },
+
+    async sendMessage(){
+
+      // this.firstMove = true;
+      // let docRef = db.collection('database').doc('mainData')
+      // let val = await docRef.get()
+      
+      // let favoriteData = val.exists ? val.data() : {}
+      // // console.log(doc.data())
+      // if(!(favoriteData[this.currentUser.uid])){
+      //   favoriteData[this.currentUser.uid] = [1,0,0,0];
+      // }else{
+      //   favoriteData[this.currentUser.uid][0]++
+      // }
+      
+      // await docRef.set(favoriteData)
+      // this.getMasterData()
+
+
+
+
+      console.log('jeu')
+      // this.practiceGameData.push({who: 'you',word: this.currentMessage });
+      
+
+      let docRef = db.collection('database').doc('practice')
+      let val = await docRef.get()
+      
+      let messageData = val.exists ? val.data() : messageData ={}
+      console.log(val.data())
+      messageData[this.currentMessage] = 'nidino256'
+      // if(!(favoriteData[this.currentUser.uid])){
+      //   favoriteData[this.currentUser.uid] = [1,0,0,0];
+      // }else{
+      //   favoriteData[this.currentUser.uid][0]++
+      // }
+      // messageData.push({})
+      // messageData.push({who: this.user.displayName ,message: this.currentMessage  });
+      // messageData.push({who: 'nisino25' ,message: this.currentMessage  });
+
+      
+      await docRef.set(messageData)
+      this.currentMessage = ''
+
+    },
+    async listen() {
+      // const messagesRef = db.database().ref("messages");
+      // let docRef = db.collection('database').doc('practice')
+
+
+      // let docRef = db.collection('database').doc('practice')
+      // let val = await docRef.get()
+      // console.log(val.data())
+
+
+      const messagesRef = db.collection('database').doc('practice').ref
+      console.log(messagesRef)
+      
+      messagesRef.on('value', snapshot => {
+        const data = snapshot.val();
+        console.log(data)
+        // let messages = [];
+        // Object.keys(data).forEach(key => {
+        //   messages.push({
+        //     id: key,
+        //     username: data[key].username,
+        //     content: data[key].content
+        //   });
+        // });
+        // state.messages = messages;
+      });
+
+    },
 
   },
   mounted(){
-    console.log(this.wordsList)
-    // this.assignAllWordsToList();
 
-    // this.results.push({time: Date.now(),outcome: Number(this.time) });
     this.practiceGameData.push({who: 'computer',word: 'しりとり' });
     this.pracrticeWordData.push('しりとり')
-    // this.practiceGameData[0]({who: 'computer',word: 'しりとり' });
-    // this.practiceGameData[0].who = 'computer'
-    // this.practiceGameData[0].word = 'しりとり'
-    // let theWord = 'しりとり'
-    // this.theLetter = theWord.charAt(0);
     this.theWord = 'しりとり'
     this.theLetter = this.theWord.substr(this.theWord.length - 1)
     this.allOptions = `${this.theLetter} から始まる言葉`
-    // console.log(this.theLetter)
 
+    
+
+    console.log('mounted')
+    this.listen();
 
 
   },
+  
 }
 </script>
 
