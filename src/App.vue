@@ -3,24 +3,7 @@
     
   </div>
   <div class="vue-tempalte" >
-    <!-- Navigation -->
-    <nav class="navbar shadow bg-white rounded justify-content-between flex-nowrap flex-row fixed-top">
-      <div class="container">
-        <a class="navbar-brand float-left" href="https://www.positronx.io" target="_blank">
-           positronX.io
-        </a>
-        <ul class="nav navbar-nav flex-row float-right">
-          <li class="nav-item">
-            <!-- <router-link class="nav-link pr-3" to="/login">Sign in</router-link> -->
-             <button @click="currentMenu ='login'" class="btn btn-outline-primary">Sign in</button>
-          </li>
-          <li class="nav-item">
-            <!-- <router-link class="btn btn-outline-primary" to="/">Sign up</router-link> -->
-            <button @click="currentMenu ='signup'" class="btn btn-outline-primary">Sign up</button>
-          </li>
-        </ul>
-      </div>
-    </nav>
+   
 
     <!-- Main -->
     <div class="App">
@@ -28,10 +11,166 @@
 
         <div class="inner-block">
 
+          <div class="vue-template" v-if="currentMenu === 'register'">
+            <form @submit.prevent="register()">
+              <div class="form-group">
+                <label for="exampleInputEmail1">User Name</label>
+                <input class="form-control" id="exampleInputEmail1"  placeholder="Enter your user name" v-model="username">
+              </div>
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+          </div>
+
+
+          <div class='vue-template' v-if="currentMenu === 'menu'">
+            <h3>Welcome, {{ username }}! </h3>
+            <hr>
+            <form @submit.prevent="joinARoom()">
+              <div class="form-group">
+                <label for="exampleInputEmail1">Room Code</label>
+                <input class="form-control" id="exampleInputEmail1"  placeholder="Enter the code" v-model="roomcode" style="width:40%; margin-right: auto;
+  margin-left: auto; text-align:center">
+              </div>
+              <button type="submit" class="btn btn-primary" style="margin-bottom:2px">Join a room</button>
+            </form>
+            <h5>OR</h5>
+            <button type="submit" class="btn btn-primary" @click="createARoom" >Create a room</button>
+            <hr>
+            <button type="submit" class="btn btn-danger"  style="margin-top:20px">Practice against CPU(maintance)</button>
+          </div>
+
+          <div class="vue-template" v-if="currentMenu=== 'playing'">
+            <div>
+              <h4>Your room code is [ {{roomcode}} ]</h4>
+            </div>
+
+            <div>
+              <section >
+                  <!-- <div 
+                    v-for="message in messages" :key="message.key" 
+                    :class="(username == message.username ? 'message current-user' : 'message')" style="overflow:auto">
+                    <div class="message-inner">
+                      <div class="username">{{ message.username }}</div>
+                      <div class="content">{{ message.content }}</div>
+                    </div>
+                  </div> -->
+
+                  <div v-for="message in messages" :key="message.key">
+                    <div>
+                      <article class="msg-container" id="msg-0" :class="(username == message.username ? 'msg-self' : 'msg-remote')" >
+                        <div class="msg-box">
+                          <img class="user-img" id="user-0" :src="message.avatar" />
+                          <div class="flr">
+                            <div class="messages" v-if="message.content !== 'giveup'">
+                              <p class="msg" id="msg-0">{{message.content}} </p>
+                            </div>
+                            <div v-else>
+                              <p class="msg" id="msg-0">{{message.username}} has given up!</p>
+                              <p class="msg" id="msg-0">The game is over</p>
+                            </div>
+                            <span class="timestamp"><span class="username">{{message.username}}</span></span>
+                          </div>
+                        </div>
+                      </article>
+                    </div>
+                  </div>
+                </section>
+            </div>
+            <hr style="height: 1px;
+        background-color: #ccc;
+        border: none;">
+            <div>
+
+              <form class="chat-input" onsubmit="return false;" @submit.prevent="newProcessGame()" style="margin-bottom:30px" v-if="this.username !== this.lastPlayedBy">
+                <input type="text" autocomplete="on" :placeholder="placeholderText" v-model="uncheckedWord">
+                <button>
+                              <svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="rgba(0,0,0,.38)" d="M17,12L12,17V14H8V10H12V7L17,12M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L5,8.09V15.91L12,19.85L19,15.91V8.09L12,4.15Z" /></svg>
+                          </button>
+              </form>
+              <h5 v-else>Waiting for the other players's reply... <hr style="height: 1px;
+        background-color: #ccc;
+        border: none;"></h5>
+              
+              <h6>Your room code is [ {{roomcode}} ]</h6>
+              <button class="btn btn-danger" @click="giveUp()" v-if="this.username !== this.lastPlayedBy">Give up</button>
+              <h6>Total word count is {{messages.length-2}}</h6>
+              
+            </div>
+          </div>
+
+          
+
+          
+
+
+
+
+
+
+
+
+          <div class="vue-template" v-if="currentMenu === 'chatapp'">
+             <header>
+              <button class="logout" @click="Logout">Logout</button>
+              <h1>Welcome, {{ username }}. Room code is {{this.roomcode}}</h1>
+              
+            </header>
+
+            <!-- <section class="chat-box"  > -->
+              <section >
+              <div 
+                v-for="message in messages" 
+                :key="message.key" 
+                :class="(username == message.username ? 'message current-user' : 'message')" style="overflow:auto">
+                <div class="message-inner">
+                  <div class="username">{{ message.username }}</div>
+                  <div class="content">{{ message.content }}</div>
+                  <!-- <br><br><br> -->
+                </div>
+              </div>
+            </section>
+            
+            <form class="login-form" @submit.prevent="joinARoom()">
+              <div class="form-inner"  style=margin-top:20px>
+                <h1>Join a room</h1>
+                <!-- <label for="username">Username</label> -->
+                <input 
+                  type="text" 
+                  v-model="roomcode" 
+                  placeholder="Please enter the room code..." />
+                <input 
+                  type="submit" 
+                  value="Join a room" />
+              </div>
+            </form>
+            <button @click="createARoom()">Create</button><br>
+            <button>Practice with CPU</button>
+
+
+
+            <footer>
+              <form @submit.prevent="SendMessage">
+                <input 
+                  type="text" 
+                  v-model="inputMessage" 
+                  placeholder="Write a message..." />
+                <input 
+                  type="submit" 
+                  value="Send" />
+              </form>
+            </footer>
+          </div>
+
           <div >
 
 
             <button class="btn btn-outline-success" @click="currentMenu = 'practice'" v-if="currentMenu === 'home'" >Practice</button>
+          </div>
+
+          <div class="vue-template" v-if="currentMenu === 'firePractice'">
+            <button @click="testFire()">hey</button>
+            fire
+            {{firePLists}}
           </div>
 
           <div class="vue-template" v-if="currentMenu === 'practice'">
@@ -44,8 +183,8 @@
   
                 <div v-if="currentPlayer === 'me'">
                   <div>
-                    <!-- <input type="text"  v-model="unchekedWord" @keyup.enter="pCheck()"> -->
-                    <input type="text"  v-model="unchekedWord" :placeholder="placeholderText">
+                    <!-- <input type="text"  v-model="uncheckedWord" @keyup.enter="pCheck()"> -->
+                    <input type="text"  v-model="uncheckedWord" :placeholder="placeholderText">
                     <button @click="processGame()" :disabled="!isCandidateWordValid">Send</button>
                     <!-- <button>Give Up</button> -->
                     <!-- <button @click="checkcheck()">check</button> -->
@@ -70,7 +209,7 @@
                 </div>
 
                 <div>
-                  <!-- <input type="text"  v-model="unchekedWord" @keyup.enter="pCheck()"> -->
+                  <!-- <input type="text"  v-model="uncheckedWord" @keyup.enter="pCheck()"> -->
                   <form action=""   v-on:submit.prevent="sendMessage()">
                     <input type="text"  v-model="currentMessage" :placeholder="allOptions">
                     <!-- <button @click="sendMessage()">Sende</button> -->
@@ -165,7 +304,7 @@
 
 
 <script> 
-import firebase from 'firebase'
+// import firebase from 'firebase'
 // import { auth, AuthStore, db } from './main2.js'
 // import { db } from '@/main.js'
 import db from './db';
@@ -209,7 +348,21 @@ export default {
   name: 'App',
   data(){
     return {
-      currentMenu: 'practice',
+
+      isRoomSelected: false, 
+			roomcode: null,
+			username: null,
+			messages: null,
+			inputMessage: null,
+			inputUsername: null,
+      generalFlag: true,
+      
+      avatarLink: 'https://robohash.org/668d5b3d4c78d1a3aa4cd98b7e654b2c?set=set4&bgset=&size=400x400',
+      operatorLink: 'https://gravatar.com/avatar/2f95324ba05dbbb7224d481104a25864?s=400&d=robohash&r=x',
+
+
+      currentMenu: 'register',
+      firePLists: [],
 
       user: {
         name: '',
@@ -222,7 +375,7 @@ export default {
 
 
 
-      unchekedWord: '',
+      uncheckedWord: '',
       practiceGameData: [],
       pracrticeWordData: [],
       theLetter: undefined,
@@ -247,6 +400,7 @@ export default {
       gameHistory: [], // Array<{ player: string; word: string; timestamp: Date }>
     }
   },
+
   computed: {
     placeholderText() {
       return `「${this.nextHeadCandidates.join(',')}」から始まる言葉`
@@ -255,7 +409,7 @@ export default {
       return this.gameHistory.map(h => h.word)
     },
     candidateWordErrors() {
-      const word = this.unchekedWord
+      const word = this.uncheckedWord
       let errors = []
 
       // 長さをチェック
@@ -287,8 +441,12 @@ export default {
     },
     isCandidateWordValid() {
       return !this.candidateWordErrors.length
-    }
+    },
+    lastPlayedBy(){
+      return this.messages[this.messages.length-1].username
+    },
   },
+
   watch: {
     currentPlayer: {
       handler(val) {
@@ -300,70 +458,189 @@ export default {
       immediate: true
     }
   },
+
+
   methods: {
-    assignAllWordsToList(){
+    register(){
+      if (this.username === "" || this.username === null) {
+        return
+      }
+      this.currentMenu = 'menu'
+    },
+    joinARoom(){
+      // console.log('hey')
+      let r= confirm(`Joining a room [ ${this.roomcode} ]?`);
+      if(!r){
+        return;
+      }
+			// this.roomcode= ;
+			this.isRoomSelected = true
+      this.currentMenu= 'playing'
+      this.avatarLink = 'https://gravatar.com/avatar/b0a8c4bbc0ef26b4f5be6d8f2af30634?s=400&d=robohash&r=x'
+      this.notify();
+			this.refresh();
+      
+      
+    },
+    createARoom(){
+			var randomChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+			var result = '';
+      var char = null;
+			for ( var i = 0; i < 5; i++ ) {
+
+        char = randomChars.charAt(Math.floor(Math.random() * randomChars.length));
+        if(char === 'l' || char === 'I' || char === 'o'  || char === 'O' || char === '0'){
+          // since it is really hard to distinguishj I and l
+          console.log(`I hate ${char} || ${i}`) 
+          i--;
+        }else{
+					result += char
+        }
+			}
+			// console.log(result)
+
+			let r= confirm(`Would you like to make a room [ ${result} ]?`);
+      if(!r){
+        return;
+      }
+			this.roomcode = result;
+			console.log(this.roomcode)
+
+			this.isRoomSelected = true
+      this.startingGame()
+			this.refresh();
+      this.currentMenu= 'playing'
+      
+		},
+    refresh(){
+			db.database().ref(this.roomcode).on('value', snapshot => {
+				const data = snapshot.val();
+				let messages = [];
+
+				Object.keys(data).forEach(key => {
+					messages.push({
+						id: key,
+						username: data[key].username,
+						content: data[key].content,
+            avatar: data[key].avatar,
+					});
+				});
+				// console.log('update')
+
+				this.messages = messages;
+
+        let theWord = this.messages[this.messages.length-1].content
+        // let theChar = theWord.slice(-1)
+        // console.log(theWord)
+        // console.log(theChar)
+        
+        // if(theChar !== '.' || theChar !== '!'  )
+        if(this.messages.length > 2  ){
+          this.wordHitory.push(theWord)
+          // console.log(this.wordHitory)
+          const headCandidates = this.getHeadCandidate(theWord)
+          this.nextHeadCandidates = headCandidates
+        }
+        
+
+				window.scrollTo(0,document.body.scrollHeight);
+				// console.log(document.getElementById('chattt').scrollHeight)
+			});
+		},
+    SendMessage(){
+      if(this.username === this.lastPlayedBy){
+        alert('It is not your turn yet')
+        return;
+      }
+			const messagesRef = db.database().ref(this.roomcode);
+
+      // if (this.inputMessage === "" || this.inputMessage === null) {
+      //   return;
+      // }
+
+      const message = {
+        username: this.username,
+        content: this.uncheckedWord,
+        avatar: this.avatarLink,
+      }
+
+      messagesRef.push(message);
+      this.uncheckedWord = ''
+      // this.inputMessage = "";
+      // console.log(this.avatarLink)
+		},
+    async  notify(){
+      // console.log(this.roomcode)
+      const messagesRef = db.database().ref(this.roomcode);
+
+      // if (this.inputMessage === "" || this.inputMessage === null) {
+      //   return;
+      // }
+      // this.username = 'nozozozo'
+
+      const message = {
+        username: this.username,
+        content: `${this.username}, joins now!`,
+        avatar: this.operatorLink,
+      }
+      
+
+      messagesRef.push(message);
+      this.inputMessage = "";
+
+
+      const messagesRef2 = db.database().ref(this.roomcode);
+      const message2 = {
+        username: this.username,
+        content: 'しりとり',
+        avatar: this.avatarLink,
+      }
+
+      messagesRef2.push(message2);
+    },
+    async  startingGame(){
+      const messagesRef = db.database().ref(this.roomcode);
+      
+      
+			
+
+      // if (this.inputMessage === "" || this.inputMessage === null) {
+      //   return;
+      // }
+      // this.username = 'nozozozo'
+
+      const message = {
+        username: this.username,
+        content: `Waiting for the other player...`,
+        avatar: this.operatorLink,
+      }
+
+      messagesRef.push(message);
+      this.inputMessage = "";
+      console.log('notified')
+    },
+    giveUp(){
+
+
+      let r= confirm(`Are you ready to give up?`);
+      if(!r){
+        return;
+      }
+			const messagesRef = db.database().ref(this.roomcode);
+
+      const message = {
+        username: this.username,
+        content: 'giveup',
+        avatar: this.avatarLink,
+      }
+
+      messagesRef.push(message);
+      this.inputMessage = "";
+		},
+
+
 
     
-
-      // console.log(this.wordsList)
-      // console.log(listU)
-
-
-    },
-    userRegistration() {
-      firebase
-      .auth()
-      .createUserWithEmailAndPassword(this.user.email, this.user.password)
-      .then((res) => {
-        res.user
-          .updateProfile({
-            displayName: this.user.name
-          })
-          .then(() => {
-            // this.$router.push('/login')
-            this.currentMenu = 'after'
-
-            firebase.auth().onAuthStateChanged((user) => {
-              if (user) {
-                this.user = user;
-              } else {
-                this.user = null;
-              }
-            });
-          });
-      })
-      .catch((error) => {
-         alert(error.message);
-      });
-    },
-    userLogin() {
-      firebase
-      .auth()
-      .signInWithEmailAndPassword(this.user.email, this.user.password)
-      .then(() => {
-          // this.$router.push('/home')
-          this.currentMenu = 'after'
-
-          firebase.auth().onAuthStateChanged((user) => {
-              if (user) {
-                this.user = user;
-              } else {
-                this.user = null;
-              }
-            });
-      })
-      .catch((error) => {
-        alert(error.message);
-      });
-    },
-    logOut() {
-      firebase.auth().signOut().then(() => {
-        firebase.auth().onAuthStateChanged(() => {
-          // this.$router.push('/login')
-          this.currentMenu = 'home'
-        })
-      })
-    },
     hiraganaCheck(word){
       return /^([ぁ-ん]|／|ー)*$/.test(word)
     },
@@ -579,27 +856,112 @@ export default {
       }
     },
 
-    // checkDB(){
-    //   console.log(db)
-    //    console.log(db)
-    //   // firebase.firestore()
-    //   const docRef = db.collection('database').doc('practice')
-    //   docRef.on("value", snapshot => {
-    //       // eslint-disable-line
-    //       if (snapshot) {
-    //         const rootList = snapshot.val();
-    //         console.log(snapshot.val)
-    //         let list = [];
-    //         Object.keys(rootList).forEach((val) => {
-    //           rootList[val].id = val;
-    //           list.push(rootList[val]);
-    //         });
-    //         this.chatData = list;
-    //       }else{
-    //         console.log('nope')
-    //       }
-    //     });
-    // },
+    generalCheck(){
+      if(this.username === this.lastPlayedBy){
+        alert('It is not your turn yet')
+        this.generalFlag = false
+        return;
+      }
+      
+      let word = this.uncheckedWord
+
+      if (word.length < 1) {
+        // errors.push('文字を入力してください')
+        alert('文字を入力してください')
+        this.generalFlag = false
+        return 
+      }
+
+      // ひらがなかどうかチェック
+      if (!this.hiraganaCheck(word)) {
+        // errors.push('ひらがなで入力してください')
+        alert('ひらがなで入力してください')
+        this.generalFlag = false
+        return 
+      }
+
+      // 使用済みかチェック
+      if (this.wordHitory.includes(word)) {
+        // errors.push('すでに利用されたワードです')
+        alert('すでに利用されたワードです')
+        this.generalFlag = false
+        return 
+      }
+
+      // 「を」「ん」「っ」で終われない
+      if (word.endsWith('を') || word.endsWith('ん') || word.endsWith('っ')) {
+        // errors.push('「を」「ん」「っ」で終わることはできません')
+        alert('「を」「ん」「っ」で終わることはできません')
+        this.generalFlag = false
+        return 
+      }
+
+      // ーで終わる場合
+
+      if(word.endsWith('ー')){
+        let special = word.slice(0, -1);
+
+        if (special.length < 1) {
+          // errors.push('文字を入力してください')
+          alert('文字数が足りません')
+          this.generalFlag = false
+          return false
+        }
+
+        
+
+        
+
+        // 「を」「ん」「っ」で終われない
+        if (special.endsWith('を') || special.endsWith('ん') || special.endsWith('っ') || special.endsWith('ー')){
+          // errors.push('「を」「ん」「っ」で終わることはできません')
+          alert('この場合は「を」「ん」「っ」「ー」で終わることはできません')
+          this.generalFlag = false
+          return false
+        }
+          
+      }
+
+      // 最後の答えの末尾と、先頭が一致しているか
+      if (!this.nextHeadCandidates.includes(word[0])) {
+        // errors.push(`「${this.nextHeadCandidates.join(',')}」から始まる言葉を入力してくだい`)
+        alert(`「${this.nextHeadCandidates.join(',')}」から始まる言葉を入力してくだい`)
+        this.generalFlag = false
+        return false
+      }
+      return true
+    },
+
+    newProcessGame(){
+      // 1. uncheckedWordが不正だったらreturn
+      // 2. uncheckedWordがgameHistoryにあったらreturn
+     
+      // 4. send
+
+
+      // 1. uncheckedWordが不正だったらreturn
+
+      this.generalFlag = true
+      this.generalCheck()
+      if(!this.generalFlag){
+        return;
+      }
+
+      // 2. uncheckedWordがgameHistoryにあったらreturn
+      // console.log(this.messages)
+      if(this.wordHitory.includes(this.uncheckedWord)){
+        alert('使用済みです')
+        return
+      }
+
+      //4 sending
+
+      this.SendMessage();
+      // this.uncheckedWord === ''
+    },
+
+
+
     processGame() {
       // 1. uncheckedWordが不正だったらreturn
       // 2. uncheckedWordがcpuDictに存在したらcpuDictから取り除く
@@ -609,7 +971,7 @@ export default {
 
       if (!this.isCandidateWordValid) return
 
-      const word = this.unchekedWord
+      const word = this.uncheckedWord
 
       // check from cpuDict
       const indexInCPUDict = this.cpuDict[word[0]].findIndex(w => w === word)
@@ -624,10 +986,13 @@ export default {
       this.nextHeadCandidates = headCandidates
 
       this.currentPlayer = this.currentPlayer === 'computer' ? 'me' : 'computer'
-      this.unchekedWord = ''
+      this.uncheckedWord = ''
     },
     getHeadCandidate(word) {
       if (word.endsWith('ー')) {
+        // if (word.length < 1) {
+        //   errors.push('文字を入力してください')
+        // }
         const lastLetter = word.slice(word.length - 2, word.length - 1)
         let candidates1 = acceptableLetters[lastLetter] || []
 
@@ -641,6 +1006,7 @@ export default {
         return candidates
       }
     },
+
     checkWord(){
       if (!this.isCandidateWordValid) return
 
@@ -653,7 +1019,7 @@ export default {
       // check if every words were hiragana or not
 
       // str.charAt(0);
-      this.firstLetter= this.unchekedWord.charAt(0);
+      this.firstLetter= this.uncheckedWord.charAt(0);
       if(this.firstLetter === this.theLetter || this.firstLetter === this.secondOption || this.firstLetter === this.thirdOption){
         // pass with any of the options
       }else{
@@ -662,31 +1028,31 @@ export default {
       }
 
 
-      this.lastLetter = this.unchekedWord.substr(this.unchekedWord.length - 1)
+      this.lastLetter = this.uncheckedWord.substr(this.uncheckedWord.length - 1)
       if(this.lastLetter === 'を' || this.lastLetter ==='ん'||this.lastLetter ==='っ' ){
         alert('っ、を、ん では終われません')
         return;
       }
-      // console.log((this.unchekedWord.substr(this.unchekedWord.length - 2)).charAt(0))
+      // console.log((this.uncheckedWord.substr(this.uncheckedWord.length - 2)).charAt(0))
 
 
 
-      if(this.pracrticeWordData.includes(this.unchekedWord)){
-        alert(`「${this.unchekedWord}」は使用済みです`)
+      if(this.pracrticeWordData.includes(this.uncheckedWord)){
+        alert(`「${this.uncheckedWord}」は使用済みです`)
         return;
       }
       
-      if(this.unchekedWord.substr(this.unchekedWord.length - 1) === 'ー'){
+      if(this.uncheckedWord.substr(this.uncheckedWord.length - 1) === 'ー'){
         console.log('---??')
-        // console.log(this.unchekedWord.substr(this.unchekedWord.length - 2))
-        if((this.unchekedWord.substr(this.unchekedWord.length - 2)).charAt(0) === 'ー'){
+        // console.log(this.uncheckedWord.substr(this.uncheckedWord.length - 2))
+        if((this.uncheckedWord.substr(this.uncheckedWord.length - 2)).charAt(0) === 'ー'){
           alert(`「ー」は文末に2回連続しようすることはできません`)
           return;
         }else{
           // console.log('1')
 
 
-          this.lastLetter = (this.unchekedWord.substr(this.unchekedWord.length - 2)).charAt(0)
+          this.lastLetter = (this.uncheckedWord.substr(this.uncheckedWord.length - 2)).charAt(0)
           if(this.lastLetter === 'を' || this.lastLetter ==='ん'||this.lastLetter ==='っ' ){
             alert('っ、を、ん では終われません')
 
@@ -698,18 +1064,18 @@ export default {
           }
         }
       }else{
-        this.theLetter = this.unchekedWord.substr(this.unchekedWord.length - 1)
+        this.theLetter = this.uncheckedWord.substr(this.uncheckedWord.length - 1)
         this.moreOptions(this.theLetter)
         // console.log('3')
       }
 
-      // this.theLetter = this.unchekedWord.substr(this.unchekedWord.length - 1)
+      // this.theLetter = this.uncheckedWord.substr(this.uncheckedWord.length - 1)
       
 
-      this.practiceGameData.push({who: 'you',word: this.unchekedWord });
-      this.pracrticeWordData.push(this.unchekedWord)
+      this.practiceGameData.push({who: 'you',word: this.uncheckedWord });
+      this.pracrticeWordData.push(this.uncheckedWord)
       // this.moreOptions(this.theLetter)
-      this.unchekedWord = ''
+      this.uncheckedWord = ''
       window.setInterval(function() {
         var chatBox = document.getElementById('chatBox');
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -722,7 +1088,6 @@ export default {
 
       
     },
-
     returnNewWord(){
       // console.log(this.wordsList)
       this.convertHiragana(this.theLetter);
@@ -1094,88 +1459,22 @@ export default {
       }
     },
 
-    async sendMessage(){
 
-      // this.firstMove = true;
-      // let docRef = db.collection('database').doc('mainData')
-      // let val = await docRef.get()
-      
-      // let favoriteData = val.exists ? val.data() : {}
-      // // console.log(doc.data())
-      // if(!(favoriteData[this.currentUser.uid])){
-      //   favoriteData[this.currentUser.uid] = [1,0,0,0];
-      // }else{
-      //   favoriteData[this.currentUser.uid][0]++
-      // }
-      
-      // await docRef.set(favoriteData)
-      // this.getMasterData()
+    
 
-
-
-
-      console.log('jeu')
-      // this.practiceGameData.push({who: 'you',word: this.currentMessage });
-      
-
-      let docRef = db.collection('database').doc('practice')
-      let val = await docRef.get()
-      
-      let messageData = val.exists ? val.data() : messageData ={}
-      console.log(val.data())
-      messageData[this.currentMessage] = 'nidino256'
-      // if(!(favoriteData[this.currentUser.uid])){
-      //   favoriteData[this.currentUser.uid] = [1,0,0,0];
-      // }else{
-      //   favoriteData[this.currentUser.uid][0]++
-      // }
-      // messageData.push({})
-      // messageData.push({who: this.user.displayName ,message: this.currentMessage  });
-      // messageData.push({who: 'nisino25' ,message: this.currentMessage  });
-
-      
-      await docRef.set(messageData)
-      this.currentMessage = ''
-
-    },
-    async listen() {
-      // const messagesRef = db.database().ref("messages");
-      // let docRef = db.collection('database').doc('practice')
-
-
-      // let docRef = db.collection('database').doc('practice')
-      // let val = await docRef.get()
-      // console.log(val.data())
-
-
-      const messagesRef = db.collection('database').doc('practice').ref
-      console.log(messagesRef)
-      
-      messagesRef.on('value', snapshot => {
-        const data = snapshot.val();
-        console.log(data)
-        // let messages = [];
-        // Object.keys(data).forEach(key => {
-        //   messages.push({
-        //     id: key,
-        //     username: data[key].username,
-        //     content: data[key].content
-        //   });
-        // });
-        // state.messages = messages;
-      });
-
-    },
 
   },
   mounted(){
+    // let wooord = 'たべるasoijsio'
+    // wooord = wooord.slice(0, -1);
+    // console.log(wooord)
     this.cpuDict = tmpWordList // FIDME: use wordList
-    const firstWord = 'すきー'
+    // const firstWord = 'すきー'
 
-    this.gameHistory.push({ player: 'computer', word: firstWord, timestamp: new Date() })
-    const headCandidates = this.getHeadCandidate(firstWord)
-    this.nextHeadCandidates = headCandidates
-    this.currentPlayer = 'me'
+    // this.gameHistory.push({ player: 'computer', word: firstWord, timestamp: new Date() })
+    // const headCandidates = this.getHeadCandidate(firstWord)
+    // this.nextHeadCandidates = headCandidates
+    // this.currentPlayer = 'me'
 
 
 
@@ -1194,11 +1493,6 @@ export default {
     this.theLetter = this.theWord.substr(this.theWord.length - 1)
     this.allOptions = `${this.theLetter} から始まる言葉`
 
-    
-
-    console.log('mounted')
-    this.listen();
-
 
   },
   
@@ -1206,11 +1500,14 @@ export default {
 </script>
 
 <style>
+body {
+    background: #1c1e22;
+}
 .chatBox{
   /* position: absolute; */
   width: 100%;
   top: 8.5%;
-  height:28%;
+  /* height:28%; */
   /* width: 60em; */
   /* background-color: #304455; */
   border: solid 1px black;
@@ -1231,4 +1528,113 @@ export default {
   padding-left: 0;
   color: red;
 }
+
+.chat-input {
+    flex: 0 0 auto;
+    height: 60px;
+    background: #40434e;
+    border-top: 1px solid #2671ff;
+    box-shadow: 0 0 4px rgba(0,0,0,.14),0 4px 8px rgba(0,0,0,.28);
+    /* width: 100%; */
+}
+
+.chat-input input {
+    height: 59px;
+    line-height: 60px;
+    outline: 0 none;
+    border: none;
+    width: calc(100% - 60px);
+    color: white;
+    text-indent: 10px;
+    font-size: 12pt;
+    padding: 0;
+    background: #40434e;
+}
+.chat-input button {
+    float: right;
+    outline: 0 none;
+    border: none;
+    background: rgba(255,255,255,.25);
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    padding: 2px 0 0 0;
+    margin: 10px;
+    transition: all 0.15s ease-in-out;
+}
+
+.msg-box {
+    display: flex;
+    background: #5b5e6c;
+    padding: 10px 10px 0 10px;
+    border-radius: 0 6px 6px 0;
+    max-width: 80%;
+    width: auto;
+    float: left;
+    box-shadow: 0 0 2px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.24);
+}
+
+.user-img {
+    display: inline-block;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    background: #2671ff;
+    margin: 0 10px 10px 0;
+}
+
+.username {
+    margin-right: 3px;
+}
+
+.timestamp {
+    color: rgba(0,0,0,.38);
+    font-size: 8pt;
+    margin-bottom: 10px;
+}
+
+.msg {
+    display: inline-block;
+    font-size: 11pt;
+    line-height: 13pt;
+    color: rgba(255,255,255,.7);
+    margin: 0 0 4px 0;
+}
+.msg:first-of-type {
+    margin-top: 8px;
+}
+
+.msg-container {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 10px 0;
+    padding: 0;
+}
+
+.messages {
+    flex: 1 0 auto;
+}
+
+.msg-self .msg-box {
+    border-radius: 6px 0 0 6px;
+    background: #2671ff;
+    float: right;
+}
+.msg-self .user-img {
+    margin: 0 0 10px 10px;
+}
+.msg-self .msg {
+    text-align: right;
+}
+.msg-self .timestamp {
+    text-align: right;
+}
+.flr {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - 50px);
+}
+
 </style>
